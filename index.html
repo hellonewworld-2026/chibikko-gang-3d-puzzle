@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ちびっこギャング 3D大乱闘パズル</title>
+  <meta name="description" content="ストリートを舞台にしたちびっこギャングたちの痛快3Dマッチ3パズルゲーム！">
+  <meta name="theme-color" content="#ffb900">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Fredoka:wght@600;800&family=M+PLUS+Rounded+1c:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+<div id="app-container">
+
+  <!-- ==================== 1. タイトル画面 ==================== -->
+  <section id="screen-title" class="screen active">
+    <div class="title-logo-box">
+      <div class="title-sub">3D STREET PUZZLE BLAST!</div>
+      <h1 class="title-main">ちびっこ<br>ギャング<br>3D大乱闘パズル</h1>
+      <div class="title-badge">★ MATCH-3 ADVENTURE ★</div>
+    </div>
+
+    <!-- 迫力のボスVSちびっこギャング ヒーロービジュアル -->
+    <div class="title-hero-visual">
+      <canvas id="title-hero-canvas" width="300" height="220"></canvas>
+    </div>
+
+    <div class="title-buttons-box">
+      <button id="btn-start-game" class="btn-primary">
+        <span>🎮 3Dゲームスタート</span>
+      </button>
+      <button id="btn-sound-toggle" class="btn-secondary">
+        <span id="sound-btn-text">🔊 サウンド: ON</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ==================== 2. ステージセレクト画面 ==================== -->
+  <section id="screen-stage-select" class="screen">
+    <div class="top-bar">
+      <button id="btn-stage-back" class="btn-secondary btn-icon">◀</button>
+      <div class="screen-title-text">アジト・ステージマップ</div>
+      <div style="width: 35px;"></div>
+    </div>
+
+    <div class="stage-map-scroll" id="stage-grid-container">
+      <!-- JSで動的生成 -->
+    </div>
+  </section>
+
+  <!-- ==================== 3. メインパズル画面 ==================== -->
+  <section id="screen-game" class="screen">
+    <div class="game-header">
+      <button id="btn-game-pause" class="btn-secondary btn-icon" style="width: 32px; height: 32px; font-size: 13px;">⏸</button>
+      
+      <div class="stat-group">
+        <div class="stat-pill">
+          <span class="stat-label">スコア</span>
+          <span id="label-score" class="stat-val">0</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">残りターン</span>
+          <span id="label-moves" class="stat-val moves-left">20</span>
+        </div>
+      </div>
+
+      <div class="stat-pill" style="min-width: 44px;">
+        <span class="stat-label">STAGE</span>
+        <span id="label-stage-num" class="stat-val">1</span>
+      </div>
+    </div>
+
+    <div class="target-box">
+      <div class="target-title">🎯 ターゲット:</div>
+      <div class="target-counts" id="target-items-box">
+      </div>
+    </div>
+
+    <div class="boss-banner" id="boss-banner">
+      <div class="boss-info">
+        <span id="boss-name-text">👹 頑固な店主ボブ</span>
+        <span id="boss-hp-text">100 / 100</span>
+      </div>
+      <div class="boss-hp-track">
+        <div class="boss-hp-fill" id="boss-hp-fill"></div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap" id="three-container">
+      <canvas id="puzzle-canvas"></canvas>
+    </div>
+
+    <div class="game-footer">
+      <div class="char-sp-box">
+        <div class="char-avatar-btn" id="btn-char-avatar">
+          <canvas id="char-avatar-canvas" width="48" height="48" class="char-avatar-img"></canvas>
+          <div class="char-badge-skill">READY!</div>
+        </div>
+        <div class="sp-bar-wrap">
+          <div class="sp-label-row">
+            <span id="char-name-label">レオ (スナイパー)</span>
+            <span id="sp-val-label">0%</span>
+          </div>
+          <div class="sp-track">
+            <div class="sp-fill" id="sp-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-skill-action" class="btn-skill-cast">⚡ スキル発動！</button>
+    </div>
+  </section>
+
+  <!-- ==================== 4. スキルカットイン ==================== -->
+  <div id="skill-cutin-layer">
+    <div class="cutin-banner">
+      <div>
+        <div class="cutin-char-name" id="cutin-char-name">LEO</div>
+        <div class="cutin-skill-name" id="cutin-skill-name">パチンコ・スナイプ発動！！</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 5. モーダル ==================== -->
+  <div id="modal-clear" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title win">STAGE CLEAR!!</div>
+      <div class="modal-stars" id="modal-clear-stars">
+        <span>★</span><span>★</span><span>★</span>
+      </div>
+      <div class="modal-stats">
+        <div class="modal-stat-row">
+          <span>獲得スコア</span>
+          <span id="modal-clear-score">12,500</span>
+        </div>
+        <div class="modal-stat-row">
+          <span>残りターンボーナス</span>
+          <span id="modal-clear-bonus">+3,000</span>
+        </div>
+        <div class="modal-stat-row">
+          <span>最大コンボ数</span>
+          <span id="modal-clear-combo">7 Combo!</span>
+        </div>
+      </div>
+      <div class="modal-btn-row">
+        <button id="btn-clear-map" class="btn-secondary">マップ</button>
+        <button id="btn-clear-next" class="btn-primary">次へ進む ▶</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-gameover" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title lose">GAME OVER...</div>
+      <p style="color: #bbb; margin-bottom: 10px; font-size: 12.5px;">ターンが尽きてしまった！</p>
+      <div class="modal-stats">
+        <div class="modal-stat-row">
+          <span>到達スコア</span>
+          <span id="modal-gameover-score">5,400</span>
+        </div>
+      </div>
+      <div class="modal-btn-row">
+        <button id="btn-gameover-map" class="btn-secondary">マップ</button>
+        <button id="btn-gameover-retry" class="btn-primary">再挑戦 ↺</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-pause" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-title" style="color: #fff;">PAUSE</div>
+      <div class="title-buttons-box" style="margin: 12px auto 0;">
+        <button id="btn-pause-resume" class="btn-primary">ゲーム再開</button>
+        <button id="btn-pause-sound" class="btn-secondary">🔊 サウンド切替</button>
+        <button id="btn-pause-map" class="btn-secondary">ステージ選択へ戻る</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 完全自律型スクリプト (file:// & Web 両対応) -->
+<script src="js/game.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
